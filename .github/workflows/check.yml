@@ -18,17 +18,19 @@ jobs:
       - uses: actions/checkout@v6
 
       - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: false
 
-      # github format → PR アノテーション表示
+      # github format — shows annotations in Actions log
       - name: Run pythaw (github format)
         run: uvx pythaw check --format github --exit-zero .
 
-      # sarif format → Code Scanning 連携
+      # sarif format — uploads to Code Scanning
       - name: Run pythaw (sarif format)
         run: uvx pythaw check --format sarif --exit-zero . > results.sarif
 
       - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: results.sarif
         if: always()
