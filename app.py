@@ -1,39 +1,7 @@
-"""Sample Lambda with violations for testing pythaw output formats."""
-import boto3
-
-
-class S3Service:
-    def __init__(self):
-        self.client = boto3.client("s3")        # PW001 (nested in class)
-        self.resource = boto3.resource("s3")     # PW002 (nested in class)
-
-    def list_buckets(self):
-        return self.client.list_buckets()
-
-
-class DynamoService:
-    def __init__(self):
-        self.table = boto3.resource("dynamodb").Table("users")  # PW002
-
-    def get_user(self, user_id):
-        return self.table.get_item(Key={"id": user_id})
-
-
-def build_session():
-    session = boto3.Session(region_name="ap-northeast-1")  # PW003
-    return session
-
-
-def build_clients(session):
-    sqs = session.client("sqs")       # PW001
-    sns = session.client("sns")       # PW001
-    return sqs, sns
-
-
-def send_notification(topic_arn, message):
-    session = build_session()
-    _, sns = build_clients(session)
-    sns.publish(TopicArn=topic_arn, Message=message)
+"""Lambda handler that delegates to service classes and utility functions."""
+from services.dynamo import DynamoService
+from services.notification import send_notification
+from services.s3 import S3Service
 
 
 def handler(event, context):
