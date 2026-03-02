@@ -1,0 +1,34 @@
+name: pythaw check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: astral-sh/setup-uv@v7
+
+      # github format → PR アノテーション表示
+      - name: Run pythaw (github format)
+        run: uvx pythaw check --format github --exit-zero .
+
+      # sarif format → Code Scanning 連携
+      - name: Run pythaw (sarif format)
+        run: uvx pythaw check --format sarif --exit-zero . > results.sarif
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+        if: always()
